@@ -1,1 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>專業飲食計算器</title>
+    <style>
+        :root { --primary: #2e7d32; --bg: #f8f9fa; --white: #ffffff; }
+        body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #333; }
+        .container { max-width: 500px; margin: 0 auto; }
+        h1 { text-align: center; color: var(--primary); }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-box { background: var(--white); padding: 10px; border-radius: 10px; text-align: center; border-bottom: 3px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .stat-val { display: block; font-size: 1.2rem; font-weight: bold; color: var(--primary); }
+        .card { background: var(--white); padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .option-group { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
+        .opt-btn { background: #eee; padding: 8px 15px; border-radius: 20px; font-size: 14px; cursor: pointer; border: 1px solid #ccc; }
+        .opt-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        button.main-btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .log-item { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--primary); }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🥗 精確飲食紀錄</h1>
+    <div class="stat-grid">
+        <div class="stat-box"><span>熱量</span><span class="stat-val" id="res-cal">0</span></div>
+        <div class="stat-box"><span>蛋白</span><span class="stat-val" id="res-pro">0</span></div>
+        <div class="stat-box"><span>碳水</span><span class="stat-val" id="res-carb">0</span></div>
+    </div>
+    <div class="card">
+        <label>🔍 食物名稱</label>
+        <input type="text" id="foodSearch" oninput="matchFood()" placeholder="例如：雞腿便當">
+        <div id="customOptions" style="display:none;">
+            <label>⚙️ 調整選項</label>
+            <div class="option-group">
+                <div class="opt-btn" id="opt-halfRice" onclick="toggleOpt('halfRice')">半飯 (-140k)</div>
+                <div class="opt-btn" id="opt-noRice" onclick="toggleOpt('noRice')">不吃飯 (-280k)</div>
+                <div class="opt-btn" id="opt-noSkin" onclick="toggleOpt('noSkin')">去皮 (-70k)</div>
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;">
+            <input type="number" id="cur-cal" placeholder="熱量">
+            <input type="number" id="cur-pro" placeholder="蛋白">
+            <input type="number" id="cur-carb" placeholder="碳水">
+        </div>
+        <button class="main-btn" onclick="addEntry()">➕ 加入紀錄</button>
+    </div>
+    <div id="logList"></div>
+</div>
+<script>
+    const foodDB = {
+        "里肌蛋吐司": {cal: 450, pro: 20, carb: 45},
+        "里肌蛋吐司去邊不加醬": {cal: 310, pro: 18, carb: 28},
+        "雞腿便當": {cal: 850, pro: 35, carb: 90, canAdjust: true},
+        "中杯無糖豆漿": {cal: 110, pro: 11, carb: 6}
+    };
+    let activeOpts = { halfRice: false, noRice: false, noSkin: false };
+    let logs = [];
+    function matchFood() {
+        const val = document.getElementById('foodSearch').value.trim();
+        const info = foodDB[val];
+        const optDiv = document.getElementById('customOptions');
+        if (info) {
+            document.getElementById('cur-cal').value = info.cal;
+            document.getElementById('cur-pro').value = info.pro;
+            document.getElementById('cur-carb').value = info.carb;
+            optDiv.style.display = info.canAdjust ? 'block' : 'none';
+        }
+    }
+    function toggleOpt(type) {
+        if (type === 'halfRice') activeOpts.noRice = false;
+        if (type === 'noRice') activeOpts.halfRice = false;
+        activeOpts[type] = !activeOpts[type];
+        Object.keys(activeOpts).forEach(k => {
+            document.getElementById('opt-'+k).className = activeOpts[k] ? 'opt-btn active' : 'opt-btn';
+        });
+        applyAdjustments();
+    }
+    function applyAdjustments() {
+        const val = document.getElementById('foodSearch').value.trim();
+        let bC = foodDB[val].cal, bB = foodDB[val].carb;
+        if (activeOpts.halfRice) { bC -= 140; bB -= 35; }
+        if (activeOpts.noRice) { bC -= 280; bB -= 70; }
+        if (activeOpts.noSkin) { bC -= 70; }
+        document.getElementById('cur-cal').value = bC;
+        document.getElementById('cur-carb').value = bB;
+    }
+    function addEntry() {
+        const name = document.getElementById('foodSearch').value;
+        const cal = parseFloat(document.getElementById('cur-cal').value);
+        const pro = parseFloat(document.getElementById('cur-pro').value);
+        const carb = parseFloat(document.getElementById('cur-carb').value);
+        logs.push({ name, cal, pro, carb });
+        render();
+    }
+    function render() {
+        const list = document.getElementById('logList'); list.innerHTML = '';
+        let tc=0, tp=0, tb=0;
+        logs.forEach(item => {
+            tc += item.cal; tp += item.pro; tb += item.carb;
+            list.innerHTML += `<div class="log-item"><b>${item.name}</b> <span>${item.cal}卡</span></div>`;
+        });
+        document.getElementById('res-cal').innerText = tc;
+        document.getElementById('res-pro').innerText = tp.toFixed(1);
+        document.getElementById('res-carb').innerText = tb.toFixed(1);
+    }
+</script>
+</body>
+</html>
 
