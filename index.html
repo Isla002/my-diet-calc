@@ -3,118 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>飲食紀錄 Pro - 我的飲食計算器</title>
+    <title>我的飲食計算器 Pro</title>
     <style>
-        :root { --primary: #008037; --bg: #fdfdfd; --card: #ffffff; }
-        body { font-family: -apple-system, sans-serif; background: #f0f2f0; margin: 0; padding: 15px; color: #333; }
+        :root { --primary: #008037; --bg: #f5f7f5; --card: #ffffff; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #333; }
         .container { max-width: 500px; margin: 0 auto; }
+        .main-card { background: var(--card); padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-bottom: 20px; position: relative; }
+        
+        /* 搜尋選單樣式 */
+        #searchWrapper { position: relative; }
+        #results { position: absolute; width: 100%; background: white; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); z-index: 100; max-height: 200px; overflow-y: auto; display: none; margin-top: -10px; }
+        .res-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .res-item:hover { background: #f0fdf4; }
+
+        input { width: 100%; border: 2px solid #eee; border-radius: 12px; padding: 14px; font-size: 16px; box-sizing: border-box; margin-bottom: 12px; transition: 0.3s; }
+        input:focus { border-color: var(--primary); outline: none; }
+        
+        .scale-box { background: #fffcf0; padding: 15px; border-radius: 15px; border: 1px solid #ffe58f; margin-bottom: 15px; display: none; }
+        .num-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+        .num-grid label { font-size: 11px; color: #888; margin-bottom: 4px; display: block; }
+        
+        .add-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; }
         .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-        .stat-card { background: var(--card); padding: 12px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-top: 4px solid #ff8200; }
-        .stat-value { font-size: 16px; font-weight: 800; color: var(--primary); display: block; }
-        .main-card { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); margin-bottom: 20px; }
-        input { width: 100%; border: 2px solid #eee; border-radius: 12px; padding: 12px; font-size: 16px; box-sizing: border-box; margin-bottom: 10px; }
-        .num-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px; }
-        .add-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; }
-        .log-item { background: white; padding: 12px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #ff8200; }
+        .stat-card { background: white; padding: 12px; border-radius: 15px; text-align: center; border-top: 4px solid #ff8200; }
+        .log-item { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header><h1 style="text-align:center; color:var(--primary);">🏪 我的飲食計算器 Pro</h1></header>
+    <header><h1 style="text-align:center; color:var(--primary);">🥗 我的飲食計算器 Pro</h1></header>
 
     <div class="dashboard">
-        <div class="stat-card"><span>熱量</span><span class="stat-value" id="t-cal">0</span></div>
-        <div class="stat-card"><span>蛋白</span><span class="stat-value" id="t-pro">0</span></div>
-        <div class="stat-card"><span>碳水</span><span class="stat-value" id="t-carb">0</span></div>
+        <div class="stat-card"><span>熱量</span><span id="t-cal" style="display:block; font-weight:800; color:var(--primary);">0</span></div>
+        <div class="stat-card"><span>蛋白</span><span id="t-pro" style="display:block; font-weight:800; color:var(--primary);">0</span></div>
+        <div class="stat-card"><span>碳水</span><span id="t-carb" style="display:block; font-weight:800; color:var(--primary);">0</span></div>
     </div>
 
     <div class="main-card">
-        <label>🔍 我的飲食計算器</label>
-        <input type="text" id="fName" oninput="updateMatch()" placeholder="輸入關鍵字">
-        <div class="num-grid">
-            <div><label style="font-size:11px;">熱量</label><input type="number" id="c-cal"></div>
-            <div><label style="font-size:11px;">蛋白</label><input type="number" id="c-pro"></div>
-            <div><label style="font-size:11px;">碳水</label><input type="number" id="c-carb"></div>
+        <div id="searchWrapper">
+            <label style="font-weight:bold; color:var(--primary);">🔍 搜尋食物</label>
+            <input type="text" id="fName" oninput="doSearch()" placeholder="例如：御飯糰、香蕉、雞胸肉">
+            <div id="results"></div>
         </div>
-        <button class="add-btn" onclick="add()">加入今日紀錄</button>
+
+        <div id="scaleZone" class="scale-box">
+            <label id="scaleLabel" style="font-weight:bold; font-size:14px;">調整份量 (克/g)</label>
+            <input type="number" id="weightInput" oninput="reCalc()" placeholder="輸入重量">
+            <small style="color:#888;">* 系統會根據重量自動計算營養</small>
+        </div>
+
+        <div class="num-grid">
+            <div><label>熱量</label><input type="number" id="c-cal"></div>
+            <div><label>蛋白(g)</label><input type="number" id="c-pro"></div>
+            <div><label>碳水(g)</label><input type="number" id="c-carb"></div>
+        </div>
+        <button class="add-btn" onclick="save()">加入今日紀錄</button>
     </div>
     <div id="logs"></div>
 </div>
 
 <script>
+    // 擴展資料庫：定義每 100g 或 每份 的基準
     const db = {
-        // --- 7-11 ---
-        "7-11-大成舒迷雞胸肉": {cal: 115, pro: 22.5, carb: 1},
-        "7-11-御料小館烤雞翅": {cal: 185, pro: 14, carb: 4},
-        "7-11-肉鬆御飯糰": {cal: 215, pro: 4.5, carb: 41},
-        "7-11-鮪魚御飯糰": {cal: 195, pro: 4.8, carb: 35},
-        "7-11-石安牧場溫泉蛋(2入)": {cal: 140, pro: 13, carb: 1},
-        "7-11-真飽涼麵(原味)": {cal: 650, pro: 18, carb: 95},
-        "7-11-西西里風檸檬咖啡(特大)": {cal: 210, pro: 1, carb: 50},
-        "7-11-燕麥拿鐵(大)": {cal: 230, pro: 3, carb: 35},
-
-        // --- 全家 FamilyMart ---
-        "全家-大成雞胸肉(法式)": {cal: 104, pro: 22.1, carb: 0.8},
-        "全家-烤多蛋白飯糰": {cal: 285, pro: 12, carb: 45},
-        "全家-夯番薯(中)": {cal: 180, pro: 2, carb: 42},
-        "全家-茶葉蛋": {cal: 75, pro: 7, carb: 1},
-        "全家-小滷青蔬": {cal: 110, pro: 5, carb: 8},
-        "全家-高纖無糖豆漿": {cal: 160, pro: 15, carb: 10},
-        "全家-媽媽煮藝小籠湯包": {cal: 280, pro: 11, carb: 35},
-
-        // --- 麥當勞/星巴克/台G店 (保留精選) ---
-        "麥當勞-大薯": {cal: 529, pro: 6, carb: 63},
-        "麥當勞-豬肉滿福堡加蛋": {cal: 427, pro: 21, carb: 29},
-        "星巴克-那堤(中)": {cal: 150, pro: 8, carb: 13},
-        "台G店-蒜頭雞湯": {cal: 420, pro: 38, carb: 8},
-        
-        // --- 蔬菜水果與其他 ---
-        "地瓜葉": {cal: 30, pro: 3, carb: 5},
-        "青花菜": {cal: 35, pro: 3, carb: 6},
-        "蘋果": {cal: 60, pro: 0.3, carb: 15},
-        "香蕉": {cal: 90, pro: 1.1, carb: 23}
+        "7-11-鮪魚御飯糰": {cal: 195, pro: 4.8, carb: 35, unit: "份"},
+        "7-11-肉鬆御飯糰": {cal: 215, pro: 4.5, carb: 41, unit: "份"},
+        "7-11-大成雞胸肉": {cal: 115, pro: 22.5, carb: 1, unit: "份"},
+        "香蕉": {cal: 90, pro: 1.1, carb: 23, unit: "g"}, // 以100g為基準
+        "蘋果": {cal: 52, pro: 0.3, carb: 14, unit: "g"},
+        "地瓜": {cal: 124, pro: 1.2, carb: 28, unit: "g"},
+        "麥當勞-大薯": {cal: 529, pro: 6, carb: 63, unit: "份"}
     };
 
-    let logs = JSON.parse(localStorage.getItem('my_diet_data_v5')) || [];
+    let selectedFood = null;
+    let history = JSON.parse(localStorage.getItem('diet_v7')) || [];
 
-    function updateMatch() {
-        const val = document.getElementById('fName').value.trim();
-        const f = db[val];
-        if (f) {
-            document.getElementById('c-cal').value = f.cal;
-            document.getElementById('c-pro').value = f.pro;
-            document.getElementById('c-carb').value = f.carb;
+    function doSearch() {
+        const val = document.getElementById('fName').value.trim().toLowerCase();
+        const resDiv = document.getElementById('results');
+        if(!val) { resDiv.style.display = 'none'; return; }
+        
+        let matches = Object.keys(db).filter(k => k.toLowerCase().includes(val));
+        if(matches.length > 0) {
+            resDiv.innerHTML = matches.map(m => `<div class="res-item" onclick="selectFood('${m}')">${m}</div>`).join('');
+            resDiv.style.display = 'block';
+        } else {
+            resDiv.style.display = 'none';
         }
     }
 
-    function add() {
+    function selectFood(name) {
+        selectedFood = { name, ...db[name] };
+        document.getElementById('fName').value = name;
+        document.getElementById('results').style.display = 'none';
+        
+        // 填入原始數據
+        document.getElementById('c-cal').value = selectedFood.cal;
+        document.getElementById('c-pro').value = selectedFood.pro;
+        document.getElementById('c-carb').value = selectedFood.carb;
+
+        // 顯示重量調整區 (如果是以 g 為單位的)
+        const scaleZone = document.getElementById('scaleZone');
+        if(selectedFood.unit === "g") {
+            scaleZone.style.display = 'block';
+            document.getElementById('scaleLabel').innerText = `調整重量 (目前基準: 100g)`;
+            document.getElementById('weightInput').value = 100;
+        } else {
+            scaleZone.style.display = 'none';
+        }
+    }
+
+    function reCalc() {
+        if(!selectedFood || selectedFood.unit !== "g") return;
+        const w = parseFloat(document.getElementById('weightInput').value) || 0;
+        const ratio = w / 100;
+        document.getElementById('c-cal').value = (selectedFood.cal * ratio).toFixed(1);
+        document.getElementById('c-pro').value = (selectedFood.pro * ratio).toFixed(1);
+        document.getElementById('c-carb').value = (selectedFood.carb * ratio).toFixed(1);
+    }
+
+    function save() {
         const name = document.getElementById('fName').value;
         const cal = parseFloat(document.getElementById('c-cal').value) || 0;
         const pro = parseFloat(document.getElementById('c-pro').value) || 0;
         const carb = parseFloat(document.getElementById('c-carb').value) || 0;
         if (!name) return;
-        logs.push({name, cal, pro, carb});
-        localStorage.setItem('my_diet_data_v5', JSON.stringify(logs));
-        render();
+        history.push({name, cal, pro, carb});
+        localStorage.setItem('diet_v7', JSON.stringify(history));
+        updateView();
         document.getElementById('fName').value = '';
+        document.getElementById('scaleZone').style.display = 'none';
+        selectedFood = null;
     }
 
-    function render() {
-        const div = document.getElementById('logs'); div.innerHTML = '';
+    function updateView() {
+        const list = document.getElementById('logs'); list.innerHTML = '';
         let tc=0, tp=0, tb=0;
-        logs.forEach((x, i) => {
-            tc+=x.cal; tp+=x.pro; tb+=x.carb;
-            div.innerHTML += `<div class="log-item"><div><b>${x.name}</b><br><small>${x.cal}卡 | 蛋 ${x.pro}g | 碳 ${x.carb}g</small></div><div onclick="remove(${i})">✕</div></div>`;
+        history.forEach((item, i) => {
+            tc += item.cal; tp += item.pro; tb += item.carb;
+            list.innerHTML += `<div class="log-item">
+                <div><b>${item.name}</b><br><small>${item.cal}卡 | 蛋 ${item.pro}g</small></div>
+                <div style="color:#ff4d4f; cursor:pointer;" onclick="delItem(${i})">×</div>
+            </div>`;
         });
         document.getElementById('t-cal').innerText = Math.round(tc);
         document.getElementById('t-pro').innerText = tp.toFixed(1);
         document.getElementById('t-carb').innerText = tb.toFixed(1);
     }
 
-    function remove(i) { logs.splice(i,1); localStorage.setItem('my_diet_data_v5', JSON.stringify(logs)); render(); }
-    window.onload = render;
+    function delItem(i) { history.splice(i,1); localStorage.setItem('diet_v7', JSON.stringify(history)); updateView(); }
+    window.onload = updateView;
 </script>
 </body>
 </html>
-
