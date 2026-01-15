@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我的飲食計算器 Pro</title>
+    <title>我的全能飲食助手 Pro</title>
     <style>
         :root { --primary: #008037; --bg: #f5f7f5; --card: #ffffff; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: #333; }
         .container { max-width: 500px; margin: 0 auto; }
         .main-card { background: var(--card); padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-bottom: 20px; position: relative; }
         #searchWrapper { position: relative; }
-        #results { position: absolute; width: 100%; background: white; border: 1px solid #ddd; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 999; max-height: 250px; overflow-y: auto; display: none; margin-top: -10px; }
+        #results { position: absolute; width: 100%; background: white; border: 1px solid #ddd; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 999; max-height: 350px; overflow-y: auto; display: none; margin-top: -10px; }
         .res-item { padding: 14px; border-bottom: 1px solid #f0f0f0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .res-item:hover { background: #f0fdf4; color: var(--primary); font-weight: bold; }
         .brand-label { font-size: 10px; background: #eee; padding: 2px 6px; border-radius: 4px; color: #666; }
@@ -27,7 +27,7 @@
 <body>
 
 <div class="container">
-    <header><h1 style="text-align:center; color:var(--primary); font-size: 24px;">🥗 飲食計算器 Pro</h1></header>
+    <header><h1 style="text-align:center; color:var(--primary); font-size: 24px;">🥗 全能飲食助手 Pro</h1></header>
 
     <div class="dashboard">
         <div class="stat-card"><span>熱量</span><span id="t-cal" style="display:block; font-weight:800; color:var(--primary);">0</span></div>
@@ -37,8 +37,8 @@
 
     <div class="main-card">
         <div id="searchWrapper">
-            <label style="font-weight:bold; color:var(--primary);">🔍 智能搜尋食物/品牌</label>
-            <input type="text" id="fName" oninput="doSearch()" placeholder="試試輸入：飯、大麥克、拿鐵..." autocomplete="off">
+            <label style="font-weight:bold; color:var(--primary);">🔍 智能搜尋 (已新增 7-11 全咖啡系列)</label>
+            <input type="text" id="fName" oninput="doSearch()" placeholder="試試輸入：拿鐵、精品、美式..." autocomplete="off">
             <div id="results"></div>
         </div>
 
@@ -62,46 +62,30 @@
 
 <script>
     const db = {
-        // --- 飯類 (以100g基準) ---
-        "白飯": {cal: 130, pro: 2.7, carb: 28, u: "rice", b: "主食"},
-        "糙米飯": {cal: 111, pro: 2.6, carb: 23.5, u: "rice", b: "主食"},
-        "黑米飯": {cal: 146, pro: 3.5, carb: 30, u: "rice", b: "主食"},
-        
-        // --- 麥當勞 ---
-        "麥當勞-大麥克": {cal: 548, pro: 26, carb: 46, u: "f", b: "麥當勞"},
-        "麥當勞-中薯": {cal: 376, pro: 4, carb: 45, u: "f", b: "麥當勞"},
-        "麥當勞-大薯": {cal: 529, pro: 6, carb: 63, u: "f", b: "麥當勞"},
-        "麥當勞-6塊雞塊": {cal: 270, pro: 15, carb: 14, u: "f", b: "麥當勞"},
-        "麥當勞-豬肉滿福堡加蛋": {cal: 427, pro: 21, carb: 29, u: "f", b: "麥當勞"},
-        "麥當勞-奧利奧冰炫風": {cal: 352, pro: 6, carb: 55, u: "f", b: "麥當勞"},
+        // --- CITY CAFE 特選系列 ---
+        "7-11-特選美式(中)": {cal: 12, pro: 0.7, carb: 2.2, u: "f", b: "咖啡"},
+        "7-11-特選美式(大)": {cal: 18, pro: 1.0, carb: 3.3, u: "f", b: "咖啡"},
+        "7-11-特選美式(特大)": {cal: 24, pro: 1.3, carb: 4.4, u: "f", b: "咖啡"},
+        "7-11-特選拿鐵(中)": {cal: 145, pro: 8.2, carb: 11.5, u: "f", b: "咖啡"},
+        "7-11-特選拿鐵(大)": {cal: 195, pro: 11.0, carb: 15.4, u: "f", b: "咖啡"},
+        "7-11-特選拿鐵(特大)": {cal: 255, pro: 14.2, carb: 20.2, u: "f", b: "咖啡"},
 
-        // --- 星巴克 ---
-        "星巴克-那堤(中)": {cal: 150, pro: 8, carb: 13, u: "f", b: "星巴克"},
-        "星巴克-起司牛肉可頌": {cal: 420, pro: 18, carb: 32, u: "f", b: "星巴克"},
-        "星巴克-維也納風軟法": {cal: 320, pro: 10, carb: 45, u: "f", b: "星巴克"},
+        // --- CITY PRIMA 精品系列 ---
+        "7-11-精品美式(中)": {cal: 10, pro: 0.6, carb: 2.0, u: "f", b: "精品"},
+        "7-11-精品美式(大)": {cal: 15, pro: 0.9, carb: 3.0, u: "f", b: "精品"},
+        "7-11-精品美式(特大)": {cal: 20, pro: 1.2, carb: 4.0, u: "f", b: "精品"},
+        "7-11-精品拿鐵(中)": {cal: 135, pro: 7.8, carb: 10.5, u: "f", b: "精品"},
+        "7-11-精品拿鐵(大)": {cal: 185, pro: 10.5, carb: 14.5, u: "f", b: "精品"},
+        "7-11-精品拿鐵(特大)": {cal: 240, pro: 13.5, carb: 19.5, u: "f", b: "精品"},
 
-        // --- 超商 ---
-        "7-11-鮪魚御飯糰": {cal: 195, pro: 4.8, carb: 35, u: "f", b: "7-11"},
-        "7-11-肉鬆御飯糰": {cal: 215, pro: 4.5, carb: 41, u: "f", b: "7-11"},
-        "7-11-雞胸肉": {cal: 115, pro: 22.5, carb: 1, u: "f", b: "7-11"},
-        "全家-雞胸肉": {cal: 104, pro: 22.1, carb: 0.8, u: "f", b: "全家"},
-        "全家-茶葉蛋": {cal: 75, pro: 7, carb: 1, u: "f", b: "全家"},
-        "全家-夯番薯": {cal: 124, pro: 1.2, carb: 28, u: "g", b: "全家"},
-
-        // --- 其他連鎖 ---
-        "八方雲集-招牌鍋貼": {cal: 65, pro: 2.5, carb: 7, u: "f", b: "八方"},
-        "八方雲集-招牌水餃": {cal: 55, pro: 2.5, carb: 6, u: "f", b: "八方"},
-        "藏壽司-熟成鮪魚": {cal: 80, pro: 5, carb: 12, u: "f", b: "藏壽司"},
-        "台G店-蒜頭雞湯": {cal: 420, pro: 38, carb: 8, u: "f", b: "台G店"},
-        
-        // --- 基礎食材 (以100g基準) ---
-        "香蕉": {cal: 90, pro: 1.1, carb: 23, u: "g", b: "水果"},
-        "蘋果": {cal: 52, pro: 0.3, carb: 14, u: "g", b: "水果"},
-        "雞蛋(大)": {cal: 75, pro: 7, carb: 1, u: "f", b: "蛋類"}
+        // --- (保留之前的精華品項) ---
+        "7-11-地瓜雞胸肉沙拉": {cal: 225, pro: 18.5, carb: 24.2, u: "f", b: "沙拉"},
+        "7-11-極饗-香腸雙拼便當": {cal: 785, pro: 26.4, carb: 102.1, u: "f", b: "極饗"},
+        "白飯": {cal: 130, pro: 2.7, carb: 28, u: "rice", b: "主食"}
     };
 
     let selected = null;
-    let history = JSON.parse(localStorage.getItem('diet_final_v12')) || [];
+    let history = JSON.parse(localStorage.getItem('diet_v17')) || [];
 
     function doSearch() {
         const v = document.getElementById('fName').value.toLowerCase();
@@ -152,7 +136,7 @@
             pro: parseFloat(document.getElementById('c-pro').value), 
             carb: parseFloat(document.getElementById('c-carb').value)
         });
-        localStorage.setItem('diet_final_v12', JSON.stringify(history));
+        localStorage.setItem('diet_v17', JSON.stringify(history));
         update();
         document.getElementById('fName').value = '';
         document.getElementById('scaleZone').style.display = 'none';
@@ -170,10 +154,8 @@
         document.getElementById('t-carb').innerText = tb.toFixed(1);
     }
 
-    function del(i) { history.splice(i,1); localStorage.setItem('diet_final_v12', JSON.stringify(history)); update(); }
+    function del(i) { history.splice(i,1); localStorage.setItem('diet_v17', JSON.stringify(history)); update(); }
     window.onload = update;
 </script>
 </body>
 </html>
-
-
